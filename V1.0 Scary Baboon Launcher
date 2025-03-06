@@ -21,8 +21,8 @@ clickSound.Volume = 0.7
 clickSound.Parent = screenGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 500)
-frame.Position = UDim2.new(0, -200, 0, 20)
+frame.Size = UDim2.new(0, 250, 0, 600)
+frame.Position = UDim2.new(0, -250, 0, 20)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 frame.BorderSizePixel = 0
 frame.Visible = true
@@ -103,9 +103,9 @@ creatorLabel.Parent = frame
 
 local versionLabel = Instance.new("TextLabel")
 versionLabel.Size = UDim2.new(1, -20, 0, 20)
-versionLabel.Position = UDim2.new(0, 10, 0, 460)
+versionLabel.Position = UDim2.new(0, 10, 0, 560)
 versionLabel.BackgroundTransparency = 1
-versionLabel.Text = "v1.0"
+versionLabel.Text = "v2.0" -- Updated to v2.0
 versionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 versionLabel.TextScaled = true
 versionLabel.Font = Enum.Font.Code
@@ -113,7 +113,7 @@ versionLabel.Parent = frame
 
 local function createButton(name, position, text)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 160, 0, 40)
+    button.Size = UDim2.new(0, 200, 0, 40)
     button.Position = position
     button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     button.Text = text
@@ -124,7 +124,7 @@ local function createButton(name, position, text)
     button.Parent = frame
     
     button.AnchorPoint = Vector2.new(0.5, 0.5)
-    button.Position = UDim2.new(0, position.X.Offset + 80, 0, position.Y.Offset + 20)
+    button.Position = UDim2.new(0, position.X.Offset + 100, 0, position.Y.Offset + 20)
 
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 8)
@@ -152,13 +152,14 @@ local function createButton(name, position, text)
     return button
 end
 
-local speedButton = createButton("SpeedButton", UDim2.new(0, 20, 0, 60), "Toggle Speed")
-local teleportButton = createButton("TeleportButton", UDim2.new(0, 20, 0, 120), "Teleport Home")
-local coinTeleportButton = createButton("CoinButton", UDim2.new(0, 20, 0, 180), "Toggle Coin Autofarm")
-local shopThemeButton = createButton("ShopButton", UDim2.new(0, 20, 0, 240), "Shop Teleport")
-local flyButton = createButton("FlyButton", UDim2.new(0, 20, 0, 300), "Fly")
-local resetButton = createButton("ResetButton", UDim2.new(0, 20, 0, 360), "Reset Character")
-local fullBrightButton = createButton("FullBrightButton", UDim2.new(0, 20, 0, 420), "FullBright")
+local speedButton = createButton("SpeedButton", UDim2.new(0, 25, 0, 60), "Toggle Speed")
+local teleportButton = createButton("TeleportButton", UDim2.new(0, 25, 0, 120), "Teleport Home")
+local coinTeleportButton = createButton("CoinButton", UDim2.new(0, 25, 0, 180), "Toggle Coin Autofarm")
+local shopThemeButton = createButton("ShopButton", UDim2.new(0, 25, 0, 240), "Shop Teleport")
+local flyButton = createButton("FlyButton", UDim2.new(0, 25, 0, 300), "Fly")
+local resetButton = createButton("ResetButton", UDim2.new(0, 25, 0, 360), "Reset Character")
+local fullBrightButton = createButton("FullBrightButton", UDim2.new(0, 25, 0, 420), "FullBright")
+local fastInteractButton = createButton("FastInteractButton", UDim2.new(0, 25, 0, 480), "Fast Interact")
 
 local notificationFrame = Instance.new("Frame")
 notificationFrame.Size = UDim2.new(0, 300, 0, 50)
@@ -355,6 +356,32 @@ fullBrightButton.MouseButton1Click:Connect(function()
     end
 end)
 
+local fastInteractEnabled = false
+local originalPromptDurations = {}
+
+fastInteractButton.MouseButton1Click:Connect(function()
+    fastInteractEnabled = not fastInteractEnabled
+    local newColor = fastInteractEnabled and Color3.fromRGB(85, 170, 85) or Color3.fromRGB(50, 50, 50)
+    TweenService:Create(fastInteractButton, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
+    
+    if fastInteractEnabled then
+        for _, prompt in pairs(game.Workspace:GetDescendants()) do
+            if prompt:IsA("ProximityPrompt") then
+                if not originalPromptDurations[prompt] then
+                    originalPromptDurations[prompt] = prompt.HoldDuration
+                end
+                prompt.HoldDuration = 0
+            end
+        end
+    else
+        for prompt, duration in pairs(originalPromptDurations) do
+            if prompt and prompt:IsA("ProximityPrompt") then
+                prompt.HoldDuration = duration
+            end
+        end
+    end
+end)
+
 local menuVisible = true
 local function toggleMenuVisibility()
     menuVisible = not menuVisible
@@ -362,7 +389,7 @@ local function toggleMenuVisibility()
         frame.Visible = true
         TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0, 20)}):Play()
     else
-        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, -200, 0, 20)}):Play()
+        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, -250, 0, 20)}):Play()
     end
 end
 
