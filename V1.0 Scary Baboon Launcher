@@ -1,0 +1,373 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+local c = workspace.CurrentCamera
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.CoreGui
+screenGui.Name = "ScaryBaboonGUI"
+
+-- Create sounds for interactivity
+local hoverSound = Instance.new("Sound")
+hoverSound.SoundId = "rbxassetid://9114311632" -- Subtle hover sound
+hoverSound.Volume = 0.5
+hoverSound.Parent = screenGui
+
+local clickSound = Instance.new("Sound")
+clickSound.SoundId = "rbxassetid://9114311109" -- Click sound
+clickSound.Volume = 0.7
+clickSound.Parent = screenGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 450)
+frame.Position = UDim2.new(0, -200, 0, 20) -- Start off-screen for animation
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
+frame.Visible = true
+frame.Parent = screenGui
+
+-- Gradient background
+local uiGradient = Instance.new("UIGradient")
+uiGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 30, 30))
+})
+uiGradient.Rotation = 45
+uiGradient.Parent = frame
+
+-- Glow effect with UIStroke
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2
+uiStroke.Color = Color3.fromRGB(255, 85, 85)
+uiStroke.Transparency = 0.5
+uiStroke.Parent = frame
+
+-- Animate glow effect
+local glowTween = TweenService:Create(uiStroke, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.2})
+glowTween:Play()
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = frame
+
+-- Smooth dragging functionality (by Real_IceyDev)
+local dragToggle = nil
+local dragSpeed = 0.25
+local dragStart = nil
+local startPos = nil
+
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    TweenService:Create(frame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+end
+
+frame.InputBegan:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then 
+        dragToggle = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if dragToggle then
+            updateInput(input)
+        end
+    end
+end)
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Scary Baboon"
+titleLabel.TextColor3 = Color3.fromRGB(255, 85, 85)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.Arcade
+titleLabel.Parent = frame
+
+local creatorLabel = Instance.new("TextLabel")
+creatorLabel.Size = UDim2.new(1, 0, 0, 20)
+creatorLabel.Position = UDim2.new(0, 0, 1, -20)
+creatorLabel.BackgroundTransparency = 1
+creatorLabel.Text = "By xiaon32"
+creatorLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+creatorLabel.TextScaled = true
+creatorLabel.Font = Enum.Font.Code
+creatorLabel.Parent = frame
+
+local versionLabel = Instance.new("TextLabel")
+versionLabel.Size = UDim2.new(1, -20, 0, 20)
+versionLabel.Position = UDim2.new(0, 10, 0, 410)
+versionLabel.BackgroundTransparency = 1
+versionLabel.Text = "v1.0"
+versionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+versionLabel.TextScaled = true
+versionLabel.Font = Enum.Font.Code
+versionLabel.Parent = frame
+
+local function createButton(name, position, text)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 50)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.Font = Enum.Font.Code
+    button.Name = name
+    button.Parent = frame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 8)
+    buttonCorner.Parent = button
+
+    -- Button hover effect
+    button.MouseEnter:Connect(function()
+        hoverSound:Play()
+        TweenService:Create(button, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, 55)}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {Size = UDim2.new(1, -20, 0, 50)}):Play()
+    end)
+
+    -- Button click effect
+    button.MouseButton1Down:Connect(function()
+        clickSound:Play()
+        TweenService:Create(button, TweenInfo.new(0.1), {Size = UDim2.new(1, -30, 0, 45)}):Play()
+    end)
+    button.MouseButton1Up:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.1), {Size = UDim2.new(1, -20, 0, 50)}):Play()
+    end)
+    
+    return button
+end
+
+-- Buttons
+local speedButton = createButton("SpeedButton", UDim2.new(0, 10, 0, 60), "Toggle Speed")
+local teleportButton = createButton("TeleportButton", UDim2.new(0, 10, 0, 120), "Teleport Home")
+local coinTeleportButton = createButton("CoinButton", UDim2.new(0, 10, 0, 180), "Toggle Coin Autofarm")
+local shopThemeButton = createButton("ShopButton", UDim2.new(0, 10, 0, 240), "Shop Teleport")
+local flyButton = createButton("FlyButton", UDim2.new(0, 10, 0, 300), "Fly")
+local resetButton = createButton("ResetButton", UDim2.new(0, 10, 0, 360), "Reset Character")
+
+-- Notification Popup
+local notificationFrame = Instance.new("Frame")
+notificationFrame.Size = UDim2.new(0, 300, 0, 50)
+notificationFrame.Position = UDim2.new(1, -320, 1, -70) -- Bottom right, off-screen initially
+notificationFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
+notificationFrame.BorderSizePixel = 0
+notificationFrame.Parent = screenGui
+
+local notificationCorner = Instance.new("UICorner")
+notificationCorner.CornerRadius = UDim.new(0, 8)
+notificationCorner.Parent = notificationFrame
+
+local notificationText = Instance.new("TextLabel")
+notificationText.Size = UDim2.new(1, -20, 1, 0)
+notificationText.BackgroundTransparency = 1
+notificationText.Text = "Press P key to open menu"
+notificationText.TextColor3 = Color3.fromRGB(255, 255, 255)
+notificationText.TextScaled = true
+notificationText.Font = Enum.Font.Arcade
+notificationText.Parent = notificationFrame
+
+-- Animation for notification
+local function showNotification()
+    notificationFrame.Position = UDim2.new(1, -320, 1, -70)
+    notificationFrame.Visible = true
+    TweenService:Create(notificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(1, -320, 1, -120)}):Play()
+    wait(3) -- Display for 3 seconds
+    TweenService:Create(notificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, -320, 1, -70)}):Play()
+    wait(0.5)
+    notificationFrame.Visible = false
+end
+
+-- Show notification on script start
+coroutine.wrap(showNotification)()
+
+-- Improved functionality with character checks
+local function getCharacter()
+    return player.Character or player.CharacterAdded:Wait()
+end
+
+-- Fly functionality
+local selected = false
+local speed = 60
+local lastUpdate = 0
+
+function getNextMovement(deltaTime)
+    local nextMove = Vector3.new()
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) or UserInputService:IsKeyDown(Enum.KeyCode.Left) then
+        nextMove = Vector3.new(-1, 0, 0)
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.D) or UserInputService:IsKeyDown(Enum.KeyCode.Right) then
+        nextMove = Vector3.new(1, 0, 0)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) or UserInputService:IsKeyDown(Enum.KeyCode.Up) then
+        nextMove = nextMove + Vector3.new(0, 0, -1)
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.S) or UserInputService:IsKeyDown(Enum.KeyCode.Down) then
+        nextMove = nextMove + Vector3.new(0, 0, 1)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) or UserInputService:IsKeyDown(Enum.KeyCode.E) then
+        nextMove = nextMove + Vector3.new(0, 1, 0)
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.Q) then
+        nextMove = nextMove + Vector3.new(0, -1, 0)
+    end
+    return CFrame.new(nextMove * (speed * deltaTime))
+end
+
+function onSelected()
+    local char = getCharacter()
+    if char then
+        local humanoid = char:WaitForChild("Humanoid")
+        local root = char:WaitForChild("HumanoidRootPart")
+        selected = true
+        TweenService:Create(flyButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(85, 170, 85)}):Play()
+        root.Anchored = true
+        lastUpdate = tick()
+        humanoid.PlatformStand = true
+        while selected do
+            wait()
+            local delta = tick() - lastUpdate
+            local look = (c.Focus.p - c.CoordinateFrame.p).unit
+            local move = getNextMovement(delta)
+            local pos = root.Position
+            root.CFrame = CFrame.new(pos, pos + look) * move
+            lastUpdate = tick()
+        end
+        root.Anchored = false
+        root.Velocity = Vector3.new()
+        humanoid.PlatformStand = false
+    end
+end
+
+function onDeselected()
+    selected = false
+    TweenService:Create(flyButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+end
+
+flyButton.MouseButton1Click:Connect(function()
+    if selected == false then
+        onSelected()
+    elseif selected == true then
+        onDeselected()
+    end
+end)
+
+-- Speed Toggle
+local speedEnabled = false
+speedButton.MouseButton1Click:Connect(function()
+    local character = getCharacter()
+    if character and character:FindFirstChild("Humanoid") then
+        speedEnabled = not speedEnabled
+        character.Humanoid.WalkSpeed = speedEnabled and 50 or 32
+        local newColor = speedEnabled and Color3.fromRGB(85, 170, 85) or Color3.fromRGB(50, 50, 50)
+        TweenService:Create(speedButton, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
+    end
+end)
+
+-- Teleport Home
+local function teleportHome()
+    local character = getCharacter()
+    local targetPart = nil
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and string.find(obj.Name, "Exit") then
+            targetPart = obj
+            break
+        end
+    end
+    if targetPart and character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = targetPart.CFrame
+    else
+        warn("Could not find 'Exit' part or character not loaded.")
+    end
+end
+teleportButton.MouseButton1Click:Connect(teleportHome)
+
+-- Coin Autofarm Teleport
+local coinTeleportEnabled = false
+local function teleportToRandomCoin()
+    local character = getCharacter()
+    local coins = {}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (string.find(obj.Name, "Coin") or string.find(obj.Name, "Coins")) then
+            table.insert(coins, obj)
+        end
+    end
+    if #coins > 0 and character and character:FindFirstChild("HumanoidRootPart") then
+        local randomCoin = coins[math.random(1, #coins)]
+        character.HumanoidRootPart.CFrame = randomCoin.CFrame
+    else
+        warn("No coins found or character not loaded.")
+    end
+end
+coinTeleportButton.MouseButton1Click:Connect(function()
+    coinTeleportEnabled = not coinTeleportEnabled
+    local newColor = coinTeleportEnabled and Color3.fromRGB(85, 170, 85) or Color3.fromRGB(50, 50, 50)
+    TweenService:Create(coinTeleportButton, TweenInfo.new(0.3), {BackgroundColor3 = newColor}):Play()
+    if coinTeleportEnabled then
+        while coinTeleportEnabled do
+            teleportToRandomCoin()
+            wait(0.1)
+        end
+    end
+end)
+
+-- Shop Teleport
+local function teleportToShopTheme()
+    local character = getCharacter()
+    local targetPart = nil
+    local shopThemeFolder = workspace:FindFirstChild("InteractiveMusicRegions")
+    if shopThemeFolder then
+        for _, obj in ipairs(shopThemeFolder:GetDescendants()) do
+            if obj:IsA("BasePart") and obj.Name == "Shop theme" then
+                targetPart = obj
+                break
+            end
+        end
+    end
+    if targetPart and character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = targetPart.CFrame
+    else
+        warn("Could not find 'Shop theme' or character not loaded.")
+    end
+end
+shopThemeButton.MouseButton1Click:Connect(teleportToShopTheme)
+
+-- Reset Character
+resetButton.MouseButton1Click:Connect(function()
+    local character = getCharacter()
+    if character then
+        character:BreakJoints()
+    end
+end)
+
+-- Toggle Menu Visibility with Animation
+local menuVisible = true
+local function toggleMenuVisibility()
+    menuVisible = not menuVisible
+    if menuVisible then
+        frame.Visible = true
+        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0, 20)}):Play()
+    else
+        TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, -200, 0, 20)}):Play()
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.P then
+        toggleMenuVisibility()
+    end
+end)
+
+-- Initial slide-in animation
+toggleMenuVisibility()
